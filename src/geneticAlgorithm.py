@@ -1,3 +1,4 @@
+from os import popen
 from typing import List, Callable, Tuple
 from nptyping import NDArray
 
@@ -38,12 +39,19 @@ class GeneticAlgorithm:
         for iteration in range(steps):
             fitness = self.calculateFitness(population)
 
-            # TODO: Sort population according to fitness
+            self.checkTermination()
+            if self.iterationsLeft % 10 == 0:
+                print(f"Enter new mutation parameters:")
+                self.mutationProbability = float(input())
+                self.mutationStandardDev = float(input())
+
             sortedIndices = fitness.argsort()
 
             population = population[sortedIndices]
             fitness = fitness[sortedIndices]
 
+            print("Fitness: ", fitness[0], flush=True)
+            print("Vector: ", population[0])
             with open("output.txt", "a") as outfile:
                 pprint(
                     f"---Iterations Left: {self.iterationsLeft}---",
@@ -51,8 +59,6 @@ class GeneticAlgorithm:
                 )
                 pprint(population, stream=outfile)
                 pprint(fitness, stream=outfile)
-
-            self.checkTermination()
 
             # Gurantee that top two will be selected without any mutation
             # or crossover
@@ -105,12 +111,24 @@ class GeneticAlgorithm:
     ) -> Tuple[Individual, Individual]:
 
         """Crosses two parents to give a two new offsprings"""
-        sliceIndex = np.random.randint(0, self.vectorSize)
-
-        offspring_a, offspring_b = (
-            np.concatenate((parent_a[:sliceIndex], parent_b[sliceIndex:])),
-            np.concatenate((parent_b[:sliceIndex], parent_b[sliceIndex:])),
+        # sliceIndex = np.random.randint(0, self.vectorSize)
+        sliceIndex = self.rng.choice(
+            np.arange(self.vectorSize), self.vectorSize, replace=False
         )
+
+        # offspring_a, offspring_b = (
+        #     np.concatenate((parent_a[:sliceIndex], parent_b[sliceIndex:])),
+        #     np.concatenate((parent_b[:sliceIndex], parent_b[sliceIndex:])),
+        # )
+
+        offspring_a = np.copy(parent_a)
+        offspring_b = np.copy(parent_b)
+
+        offspring_a[sliceIndex], offspring_b[sliceIndex] = (
+            offspring_b[sliceIndex],
+            offspring_a[sliceIndex],
+        )
+
         return offspring_a, offspring_b
 
     def mutateOffspring(self, offspring: Individual) -> Individual:
@@ -139,3 +157,7 @@ class GeneticAlgorithm:
         return np.sum(population ** 2, axis=1)
 
         # TODO Implement fitness function based on errors
+
+
+test = GeneticAlgorithm(10, 100, 1, 1)
+test.runEvolution(100)
