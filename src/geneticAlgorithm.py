@@ -8,6 +8,7 @@ from scipy import stats as sciStats
 
 Individual = NDArray
 Population = NDArray
+Fitness = NDArray
 
 
 class GeneticAlgorithm:
@@ -99,7 +100,10 @@ class GeneticAlgorithm:
         indices = np.random.choice(population.shape[0], 2, replace=False)
         return population[indices]
 
-    def crossOver(self, parent_a, parent_b) -> Tuple[Individual, Individual]:
+    def crossOver(
+        self, parent_a: Individual, parent_b: Individual
+    ) -> Tuple[Individual, Individual]:
+
         """Crosses two parents to give a two new offsprings"""
         sliceIndex = np.random.randint(0, self.vectorSize)
 
@@ -109,13 +113,13 @@ class GeneticAlgorithm:
         )
         return offspring_a, offspring_b
 
-    def mutateOffspring(self, offspring) -> Individual:
+    def mutateOffspring(self, offspring: Individual) -> Individual:
         """
         Mutates an individual
             Current Algo: Select some indices randomly and choose a new number from
         a gaussian distribution with mean as the number at that index
         """
-        flagArray = sciStats.bernoulli.rvs(
+        flagArray = sciStats.bernoulli.rvs(  # type:ignore
             p=self.mutationProbability, size=offspring.shape
         )
 
@@ -130,7 +134,7 @@ class GeneticAlgorithm:
         offspring[flagArray == 1] = gausArray[flagArray == 1]
         return offspring
 
-    def calculateFitness(self, population: Population):
+    def calculateFitness(self, population: Population) -> Fitness:
         """Returns fitness array for the population"""
         return np.sum(population ** 2, axis=1)
 
