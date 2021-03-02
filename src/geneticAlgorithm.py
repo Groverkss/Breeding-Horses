@@ -1,4 +1,3 @@
-from os import popen
 from typing import List, Callable, Tuple
 from nptyping import NDArray
 
@@ -6,6 +5,8 @@ from pprint import pprint
 import numpy as np
 
 from scipy import stats as sciStats
+
+from client import getErrors
 
 Individual = NDArray
 Population = NDArray
@@ -28,7 +29,6 @@ class GeneticAlgorithm:
         self.scalingFactor = 10
         self.rng = np.random.default_rng()
         self.populationSize = populationSize
-        self.iterationsLeft = iterationsLeft
         self.mutationProbability = mutationProbability
         self.mutationStandardDev = mutationStandardDev
 
@@ -37,37 +37,45 @@ class GeneticAlgorithm:
         population = self.initializePopulation()
 
         for iteration in range(steps):
-            fitness = self.calculateFitness(population)
-
-            self.checkTermination()
-            if self.iterationsLeft % 10 == 0:
-                print(f"Enter new mutation parameters:")
-                tweek_gay = input()
+            fitness, testFitness = self.calculateFitness(population)
 
             sortedIndices = fitness.argsort()
 
             population = population[sortedIndices]
             fitness = fitness[sortedIndices]
+            testFitness = testFitness[sortedIndices]
 
-            print("Fitness: ", fitness[0], flush=True)
-            self.mutationStandardDev = fitness[0]/1.6
-            print("Vector: ", population[0])
+            # self.mutationStandardDev = self.getNewStandardDev(fitness[0])
+
+            print("Fitness: ", fitness)
+            print("Test Fitness: ", testFitness)
+            print("Vector: ", population)
+
+            self.mutationStandardDev = self.getNewStandardDev(fitness[0])
+
+            # if iteration % 10 == 0:
+            #     input()
+
+            input()
+
             with open("output.txt", "a") as outfile:
                 pprint(
-                    f"---Iterations Left: {self.iterationsLeft}---",
+                    f"---Generation: {iteration}---",
                     stream=outfile,
                 )
                 pprint(population, stream=outfile)
                 pprint(fitness, stream=outfile)
 
-            # Gurantee that top two will be selected without any mutation
-            # or crossover: 10 = 8 + 2
-            nextGeneration = population[:2]
-            
-            for crossoverIteration in range((self.populationSize // 2) - 1):
+            # Gurantee that top two will be selected without any mutation or
+            # crossover: 10 = 8 + 2
+            nextGeneration = population[:1]
+
+            for crossoverIteration in range((self.populationSize // 2)):
 
                 # Select two parents from population
-                parent_a, parent_b = self.selectTwo(population[:self.populationSize - 2])
+                parent_a, parent_b = self.selectTwo(
+                    population[: self.populationSize - 3]
+                )
 
                 # Cross them
                 offspring_a, offspring_b = self.crossOver(parent_a, parent_b)
@@ -85,18 +93,32 @@ class GeneticAlgorithm:
 
     def initializePopulation(self) -> Population:
         """Initialize a population randomly"""
-        population = self.rng.random((self.populationSize, self.vectorSize))
+        # population = self.rng.random((self.populationSize, self.vectorSize))
 
-        # Scale and normalize population to be in range -10 to 10
-        population = population * 2 * self.scalingFactor
-        population = population - self.scalingFactor
+        # # Scale and normalize population to be in range -10 to 10
+        # population = population * 2 * self.scalingFactor
+        # population = population - self.scalingFactor
 
-        return population
+        # return population
 
-    def checkTermination(self) -> bool:
-        """Check if termination condition is satisfied"""
-        self.iterationsLeft -= 1
-        return self.iterationsLeft > 0
+        return np.array(
+            [
+                [
+                    1,
+                    -1.45799022e-12,
+                    -2.28980078e-13,
+                    4.62010753e-11,
+                    -1.75214813e-10,
+                    -1.83669770e-15,
+                    8.52944060e-16,
+                    2.29423303e-05,
+                    -2.04721003e-06,
+                    -1.59792834e-08,
+                    9.98214034e-10,
+                ]
+            ]
+            * 10
+        )
 
     def selectTwo(
         self, population: Population
@@ -113,7 +135,7 @@ class GeneticAlgorithm:
         """Crosses two parents to give a two new offsprings"""
         # sliceIndex = np.random.randint(0, self.vectorSize)
         sliceIndex = self.rng.choice(
-            np.arange(self.vectorSize), self.vectorSize, replace=False
+            np.arange(self.vectorSize), self.vectorSize // 2, replace=False
         )
 
         # offspring_a, offspring_b = (
@@ -133,9 +155,9 @@ class GeneticAlgorithm:
 
     def mutateOffspring(self, offspring: Individual) -> Individual:
         """
-        Mutates an individual
-            Current Algo: Select some indices randomly and choose a new number from
-        a gaussian distribution with mean as the number at that index
+        Mutates an individual Current Algo: Select some indices randomly and
+        choose a new number from a gaussian distribution with mean as the
+        number at that index
         """
         flagArray = sciStats.bernoulli.rvs(  # type:ignore
             p=self.mutationProbability, size=offspring.shape
@@ -152,11 +174,21 @@ class GeneticAlgorithm:
         offspring[flagArray == 1] = gausArray[flagArray == 1]
         return offspring
 
-    def calculateFitness(self, population: Population) -> Fitness:
+    def calculateFitness(self, population: Population):
         """Returns fitness array for the population"""
-        return np.mean(population ** 2, axis=1) ** 0.5 
+        # return np.mean(population ** 2, axis=1) ** 0.5
 
-        # TODO Implement fitness function based on errors
+        errorList = [getErrors(indi) for indi in population.tolist()]
+        return (
+            np.array([error[0] for error in errorList]),
+            np.array([error[1] for error in errorList]),
+        )
 
-test = GeneticAlgorithm(10, 100, 1, 0.5)
-test.runEvolution(100)
+    def getNewStandardDev(self, fit: NDArray) -> float:
+        """Generate new standard deviation based on fitness of vector"""
+        # return fit / 1.6
+        return fit / 1e15
+
+
+# test = GeneticAlgorithm(11, 5000000, 1, 1)
+# test.runEvolution(50000000)
