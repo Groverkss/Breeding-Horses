@@ -42,8 +42,7 @@ class GeneticAlgorithm:
             self.checkTermination()
             if self.iterationsLeft % 10 == 0:
                 print(f"Enter new mutation parameters:")
-                self.mutationProbability = float(input())
-                self.mutationStandardDev = float(input())
+                tweek_gay = input()
 
             sortedIndices = fitness.argsort()
 
@@ -51,6 +50,7 @@ class GeneticAlgorithm:
             fitness = fitness[sortedIndices]
 
             print("Fitness: ", fitness[0], flush=True)
+            self.mutationStandardDev = fitness[0]/1.6
             print("Vector: ", population[0])
             with open("output.txt", "a") as outfile:
                 pprint(
@@ -61,13 +61,13 @@ class GeneticAlgorithm:
                 pprint(fitness, stream=outfile)
 
             # Gurantee that top two will be selected without any mutation
-            # or crossover
-            nextGeneration = population[:2, :]
-
+            # or crossover: 10 = 8 + 2
+            nextGeneration = population[:2]
+            
             for crossoverIteration in range((self.populationSize // 2) - 1):
 
                 # Select two parents from population
-                parent_a, parent_b = self.selectTwo(population)
+                parent_a, parent_b = self.selectTwo(population[:self.populationSize - 2])
 
                 # Cross them
                 offspring_a, offspring_b = self.crossOver(parent_a, parent_b)
@@ -154,10 +154,9 @@ class GeneticAlgorithm:
 
     def calculateFitness(self, population: Population) -> Fitness:
         """Returns fitness array for the population"""
-        return np.sum(population ** 2, axis=1)
+        return np.mean(population ** 2, axis=1) ** 0.5 
 
         # TODO Implement fitness function based on errors
 
-
-test = GeneticAlgorithm(10, 100, 1, 1)
+test = GeneticAlgorithm(10, 100, 1, 0.5)
 test.runEvolution(100)
