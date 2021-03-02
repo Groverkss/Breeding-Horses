@@ -19,18 +19,15 @@ class GeneticAlgorithm:
     def __init__(
         self,
         populationSize: int,
-        iterationsLeft: int,
         mutationProbability: float = 1,
-        mutationStandardDev: float = 0.5,
     ) -> None:
 
         """Constructor for genetic algorithm"""
-        self.vectorSize = 11
-        self.scalingFactor = 10
+        self.vectorSize = 5
         self.rng = np.random.default_rng()
+        self.scalingFactor = 10
         self.populationSize = populationSize
         self.mutationProbability = mutationProbability
-        self.mutationStandardDev = mutationStandardDev
 
     def runEvolution(self, steps: int) -> None:
         """Run step iterations of genetic algorithm"""
@@ -50,8 +47,6 @@ class GeneticAlgorithm:
             print("Fitness: ", fitness)
             print("Test Fitness: ", testFitness)
             print("Vector: ", population)
-
-            self.mutationStandardDev = self.getNewStandardDev(fitness[0])
 
             # if iteration % 10 == 0:
             #     input()
@@ -93,24 +88,10 @@ class GeneticAlgorithm:
 
     def initializePopulation(self) -> Population:
         """Initialize a population randomly"""
-        # population = self.rng.random((self.populationSize, self.vectorSize))
-
-        # # Scale and normalize population to be in range -10 to 10
-        # population = population * 2 * self.scalingFactor
-        # population = population - self.scalingFactor
-
-        # return population
-
         return np.array(
             [
                 [
-                    1,
-                    -1.45799022e-12,
-                    -2.28980078e-13,
-                    4.62010753e-11,
-                    -1.75214813e-10,
                     -1.83669770e-15,
-                    8.52944060e-16,
                     2.29423303e-05,
                     -2.04721003e-06,
                     -1.59792834e-08,
@@ -164,7 +145,7 @@ class GeneticAlgorithm:
         )
 
         generateGaus = lambda x: np.clip(
-            np.random.normal(loc=x, scale=self.mutationStandardDev),
+            np.random.normal(loc=x, scale=abs(x) / 1e5),
             -self.scalingFactor,
             self.scalingFactor,
         )
@@ -184,11 +165,6 @@ class GeneticAlgorithm:
             np.array([error[1] for error in errorList]),
         )
 
-    def getNewStandardDev(self, fit: NDArray) -> float:
-        """Generate new standard deviation based on fitness of vector"""
-        # return fit / 1.6
-        return fit / 1e15
 
-
-# test = GeneticAlgorithm(11, 5000000, 1, 1)
-# test.runEvolution(50000000)
+test = GeneticAlgorithm(11, 1)
+test.runEvolution(50000000)

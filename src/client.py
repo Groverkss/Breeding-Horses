@@ -41,11 +41,12 @@ def sendRequest(id, vector, path):
 def getErrors(vector, id=SECRET_KEY):
     for i in vector:
         assert 0 <= abs(i) <= 10
-    assert len(vector) == MAX_DEG
 
     newVector = list(BASE)
 
-    for newIndex, index in enumerate(USEFUL):
-        newVector[newIndex] = index
+    for index, newIndex in enumerate(USEFUL):
+        newVector[newIndex] = vector[index]
 
-    return json.loads(sendRequest(id, vector, "geterrors"))
+    assert len(newVector) == MAX_DEG
+
+    return json.loads(sendRequest(id, newVector, "geterrors"))
