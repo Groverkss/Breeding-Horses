@@ -1,5 +1,6 @@
-import json
+import json, numpy as np
 import requests
+import sys
 
 USEFUL = [5, 7, 8, 9, 10]
 BASE = [
@@ -20,7 +21,6 @@ API_ENDPOINT = "http://10.4.21.156"
 MAX_DEG = 11
 SECRET_KEY = "0suppMDvWimbxGKVY7BzOIjh65t1I55r64Mj6N0NDMgabOE28E"
 
-
 def urljoin(root, path=""):
     if path:
         root = "/".join([root.rstrip("/"), path.rstrip("/")])
@@ -38,7 +38,7 @@ def sendRequest(id, vector, path):
     return response
 
 
-def getErrors(vector, id=SECRET_KEY):
+def getErrors(vector, once=True, id=SECRET_KEY):
     for i in vector:
         assert 0 <= abs(i) <= 10
 
@@ -48,5 +48,8 @@ def getErrors(vector, id=SECRET_KEY):
         newVector[newIndex] = vector[index]
 
     assert len(newVector) == MAX_DEG
-
+    
+    if once:
+        print(np.array(json.loads(sendRequest(id, newVector, "geterrors"))))
+        sys.exit(0)
     return json.loads(sendRequest(id, newVector, "geterrors"))
