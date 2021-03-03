@@ -3,23 +3,78 @@ import requests
 import sys
 
 USEFUL = [5, 7, 8, 9, 10]
+# BASE = [
+#     0.0,
+#     0.0,
+#     -10,
+#     0.0,
+#     0.0,
+#     -1.83669770e-15,
+#     0.0,
+#     2.29435303e-05,
+#     -2.04721003e-06,
+#     -1.59792834e-08,
+#     9.98214034e-10,
+# ]
+
 BASE = [
-    0.0,
-    0.0,
-    -10,
-    0.0,
-    0.0,
-    -1.83669770e-15,
-    0.0,
-    2.29435303e-05,
-    -2.04721003e-06,
-    -1.59792834e-08,
-    9.98214034e-10,
+    0.5608156902618822,
+    1.0424531,
+    0.0541103492166135,
+    -0.9970108484493192,
+    -0.0684338044,
+    -1.93664613e-15,
+    0.229984663,
+    2.29425538e-05,
+    -2.04756822e-06,
+    -1.59802504e-08,
+    9.98032340e-10,
+]
+
+# SUBMISSION = [
+#     -1.93765161e-15,
+#     2.29226307e-05,
+#     -2.04984573e-06,
+#     -1.59780183e-08,
+#     9.96132235e-10,
+# ]
+
+# SUBMISSION = [
+#     -1.93727666e-15,
+#     2.29207672e-05,
+#     -2.27026207e-06,  # Saturated
+#     -1.59742729e-08,
+#     7.80416598e-10,  # Saturated
+# ]
+
+# SUBMISSION = [
+#     -1.93870183e-15,
+#     2.09031834e-05,
+#     -2.26965921e-06,
+#     -1.59687922e-08,
+#     7.80643074e-10,
+# ]
+
+# SUBMISSION = [
+#     -1.93881007e-15,
+#     2.09078302e-05,
+#     -2.27063900e-06,
+#     -1.59706887e-08,
+#     7.80278911e-10,
+# ]
+
+SUBMISSION = [
+    -1.93908168e-15,
+    2.09240884e-05,
+    -2.26855349e-06,
+    -1.59632136e-08,
+    7.81269165e-10,
 ]
 
 API_ENDPOINT = "http://10.4.21.156"
 MAX_DEG = 11
 SECRET_KEY = "0suppMDvWimbxGKVY7BzOIjh65t1I55r64Mj6N0NDMgabOE28E"
+
 
 def urljoin(root, path=""):
     if path:
@@ -38,7 +93,7 @@ def sendRequest(id, vector, path):
     return response
 
 
-def getErrors(vector, once=True, id=SECRET_KEY):
+def getErrors(vector, once=False, id=SECRET_KEY):
     for i in vector:
         assert 0 <= abs(i) <= 10
 
@@ -48,8 +103,42 @@ def getErrors(vector, once=True, id=SECRET_KEY):
         newVector[newIndex] = vector[index]
 
     assert len(newVector) == MAX_DEG
-    
+
     if once:
-        print(np.array(json.loads(sendRequest(id, newVector, "geterrors"))))
+        err = np.array(json.loads(sendRequest(id, newVector, "geterrors")))
+        print(err)
+        print(np.array([np.sum(err)]))
         sys.exit(0)
     return json.loads(sendRequest(id, newVector, "geterrors"))
+
+
+def testErrors(vector, once=False, id=SECRET_KEY):
+    for i in vector:
+        assert 0 <= abs(i) <= 10
+
+    newVector = list(BASE)
+
+    for index, newIndex in enumerate(USEFUL):
+        newVector[newIndex] = vector[index]
+
+    assert len(newVector) == MAX_DEG
+
+    return [0, 0]
+
+
+def submit(vector=SUBMISSION, id=SECRET_KEY):
+    for i in vector:
+        assert 0 <= abs(i) <= 10
+
+    newVector = list(BASE)
+
+    for index, newIndex in enumerate(USEFUL):
+        newVector[newIndex] = vector[index]
+
+    assert len(newVector) == MAX_DEG
+
+    print(sendRequest(id, newVector, "submit"))
+
+
+if __name__ == "__main__":
+    submit()

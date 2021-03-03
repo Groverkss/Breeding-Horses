@@ -6,7 +6,7 @@ import numpy as np
 
 from scipy import stats as sciStats
 
-from client import getErrors
+from client import getErrors, testErrors
 
 Individual = NDArray
 Population = NDArray
@@ -36,7 +36,7 @@ class GeneticAlgorithm:
         for iteration in range(steps):
             fitness, testFitness = self.calculateFitness(population)
 
-            sortedIndices = fitness.argsort()
+            sortedIndices = np.abs(testFitness - fitness).argsort()
 
             population = population[sortedIndices]
             fitness = fitness[sortedIndices]
@@ -60,17 +60,16 @@ class GeneticAlgorithm:
                 )
                 pprint(population, stream=outfile)
                 pprint(fitness, stream=outfile)
+                pprint(testFitness, stream=outfile)
 
             # Gurantee that top two will be selected without any mutation or
             # crossover: 10 = 8 + 2
             nextGeneration = population[:1]
 
-            for crossoverIteration in range((self.populationSize // 2)):
+            for crossoverIteration in range(self.populationSize // 2):
 
                 # Select two parents from population
-                parent_a, parent_b = self.selectTwo(
-                    population[: self.populationSize - 3]
-                )
+                parent_a, parent_b = self.selectTwo(population)
 
                 # Cross them
                 offspring_a, offspring_b = self.crossOver(parent_a, parent_b)
@@ -86,29 +85,22 @@ class GeneticAlgorithm:
 
             population = nextGeneration
 
-    def initializePopulation(self) -> Population:
+    def initializePopulation(self):
         """Initialize a population randomly"""
         return np.array(
             [
                 [
-                    #-1.83669770e-15,
-                    #2.29423303e-05,
-                    #-2.04721003e-06,
-                    #-1.59792834e-08,
-                    #9.98214034e-10,
-                    -1.93e-15,
-                    2.29e-05,
-                    -2.049e-06,
-                    -1.6e-08,
-                    9.98e-10,
+                    -1.93881007e-15,
+                    2.09078302e-05,
+                    -2.27063900e-06,
+                    -1.59706887e-08,
+                    7.80278911e-10,
                 ]
             ]
-            * 10
+            * self.populationSize
         )
 
-    def selectTwo(
-        self, population: Population
-    ) -> Tuple[Individual, Individual]:
+    def selectTwo(self, population):
         """Selects to random individuals from a given population"""
 
         indices = np.random.choice(population.shape[0], 2, replace=False)
@@ -150,7 +142,7 @@ class GeneticAlgorithm:
         )
 
         generateGaus = lambda x: np.clip(
-            np.random.normal(loc=x, scale=abs(x) / 1e5),
+            np.random.normal(loc=x, scale=abs(x) / 1e4),
             -self.scalingFactor,
             self.scalingFactor,
         )
@@ -160,7 +152,7 @@ class GeneticAlgorithm:
         offspring[flagArray == 1] = gausArray[flagArray == 1]
         return offspring
 
-    def calculateFitness(self, population: Population):
+    def calculateFitness(self, population):
         """Returns fitness array for the population"""
         # return np.mean(population ** 2, axis=1) ** 0.5
 
@@ -171,5 +163,5 @@ class GeneticAlgorithm:
         )
 
 
-test = GeneticAlgorithm(11, 1)
+test = GeneticAlgorithm(3, 1)
 test.runEvolution(50000000)
