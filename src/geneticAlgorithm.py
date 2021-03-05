@@ -20,6 +20,7 @@ class GeneticAlgorithm:
         self,
         populationSize: int,
         mutationProbability: float = 1,
+        beta: float = 0.7,
     ) -> None:
 
         """Constructor for genetic algorithm"""
@@ -28,6 +29,7 @@ class GeneticAlgorithm:
         self.scalingFactor = 10
         self.populationSize = populationSize
         self.mutationProbability = mutationProbability
+        self.beta = beta
 
     def runEvolution(self, steps: int) -> None:
         """Run step iterations of genetic algorithm"""
@@ -36,22 +38,15 @@ class GeneticAlgorithm:
         for iteration in range(steps):
             fitness, testFitness = self.calculateFitness(population)
 
-            sortedIndices = np.abs(testFitness - fitness).argsort()
+            sortedIndices = fitness.argsort()
 
             population = population[sortedIndices]
             fitness = fitness[sortedIndices]
             testFitness = testFitness[sortedIndices]
 
-            # self.mutationStandardDev = self.getNewStandardDev(fitness[0])
-
             print("Fitness: ", fitness)
             print("Test Fitness: ", testFitness)
             print("Vector: ", population)
-
-            # if iteration % 10 == 0:
-            #     input()
-
-            input()
 
             with open("output.txt", "a") as outfile:
                 pprint(
@@ -59,8 +54,18 @@ class GeneticAlgorithm:
                     stream=outfile,
                 )
                 pprint(population, stream=outfile)
+                pprint(
+                    f"---Fitness: {iteration}---",
+                    stream=outfile,
+                )
                 pprint(fitness, stream=outfile)
+                pprint(
+                    f"---Test Fitness: {iteration}---",
+                    stream=outfile,
+                )
                 pprint(testFitness, stream=outfile)
+
+            input()
 
             # Gurantee that top two will be selected without any mutation or
             # crossover: 10 = 8 + 2
@@ -69,10 +74,17 @@ class GeneticAlgorithm:
             for crossoverIteration in range(self.populationSize // 2):
 
                 # Select two parents from population
-                parent_a, parent_b = self.selectTwo(population)
+                index_a, index_b = self.selectTwo(
+                    population[: self.populationSize - 2]
+                )
 
                 # Cross them
-                offspring_a, offspring_b = self.crossOver(parent_a, parent_b)
+                offspring_a, offspring_b = self.crossOver(
+                    population[index_a],
+                    population[index_b],
+                    fitness[index_a],
+                    fitness[index_b],
+                )
 
                 # Mutate
                 offspring_a = self.mutateOffspring(offspring_a)
@@ -89,12 +101,18 @@ class GeneticAlgorithm:
         """Initialize a population randomly"""
         return np.array(
             [
+                # [
+                # -1.83487458e-15,
+                #     2.29577124e-05,
+                #     -2.05073784e-06,
+                #     -1.59497266e-08,
+                #     9.98614763e-10,
+                # ]
                 [
-                    -1.93881007e-15,
-                    2.09078302e-05,
-                    -2.27063900e-06,
-                    -1.59706887e-08,
-                    7.80278911e-10,
+                    2.29554350e-05,
+                    -2.05167798e-06,
+                    -1.59470099e-08,
+                    9.97794193e-10,
                 ]
             ]
             * self.populationSize
@@ -104,30 +122,24 @@ class GeneticAlgorithm:
         """Selects to random individuals from a given population"""
 
         indices = np.random.choice(population.shape[0], 2, replace=False)
-        return population[indices]
+        return indices
 
     def crossOver(
-        self, parent_a: Individual, parent_b: Individual
+        self,
+        parent_a: Individual,
+        parent_b: Individual,
+        fitness_a: float,
+        fitness_b: float,
     ) -> Tuple[Individual, Individual]:
-
         """Crosses two parents to give a two new offsprings"""
-        # sliceIndex = np.random.randint(0, self.vectorSize)
-        sliceIndex = self.rng.choice(
-            np.arange(self.vectorSize), self.vectorSize // 2, replace=False
-        )
 
-        # offspring_a, offspring_b = (
-        #     np.concatenate((parent_a[:sliceIndex], parent_b[sliceIndex:])),
-        #     np.concatenate((parent_b[:sliceIndex], parent_b[sliceIndex:])),
-        # )
+        offspring_a = (
+            ((1 + self.beta) * parent_a) + ((1 - self.beta) * parent_b)
+        ) / 2
 
-        offspring_a = np.copy(parent_a)
-        offspring_b = np.copy(parent_b)
-
-        offspring_a[sliceIndex], offspring_b[sliceIndex] = (
-            offspring_b[sliceIndex],
-            offspring_a[sliceIndex],
-        )
+        offspring_b = (
+            ((1 - self.beta) * parent_a) + ((1 + self.beta) * parent_b)
+        ) / 2
 
         return offspring_a, offspring_b
 
@@ -142,7 +154,7 @@ class GeneticAlgorithm:
         )
 
         generateGaus = lambda x: np.clip(
-            np.random.normal(loc=x, scale=abs(x) / 1e4),
+            np.random.normal(loc=x, scale=abs(x) / 5e3),
             -self.scalingFactor,
             self.scalingFactor,
         )
@@ -163,5 +175,5 @@ class GeneticAlgorithm:
         )
 
 
-test = GeneticAlgorithm(3, 1)
+test = GeneticAlgorithm(9, 0.5, 0.7)
 test.runEvolution(50000000)

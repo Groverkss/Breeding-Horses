@@ -2,7 +2,7 @@ import json, numpy as np
 import requests
 import sys
 
-USEFUL = [5, 7, 8, 9, 10]
+USEFUL = [7, 8, 9, 10]
 # BASE = [
 #     0.0,
 #     0.0,
@@ -18,17 +18,17 @@ USEFUL = [5, 7, 8, 9, 10]
 # ]
 
 BASE = [
-    0.5608156902618822,
-    1.0424531,
-    0.0541103492166135,
-    -0.9970108484493192,
-    -0.0684338044,
-    -1.93664613e-15,
-    0.229984663,
-    2.29425538e-05,
-    -2.04756822e-06,
-    -1.59802504e-08,
-    9.98032340e-10,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
 ]
 
 # SUBMISSION = [
@@ -73,7 +73,8 @@ SUBMISSION = [
 
 API_ENDPOINT = "http://10.4.21.156"
 MAX_DEG = 11
-SECRET_KEY = "0suppMDvWimbxGKVY7BzOIjh65t1I55r64Mj6N0NDMgabOE28E"
+# SECRET_KEY = "0suppMDvWimbxGKVY7BzOIjh65t1I55r64Mj6N0NDMgabOE28E"
+SECRET_KEY = "rrmQj2DT1EwULu26UxrqMCvj5NuJL3BTE1Mi3qtGDU6gD7X50V"
 
 
 def urljoin(root, path=""):
