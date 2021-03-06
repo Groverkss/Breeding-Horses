@@ -23,7 +23,7 @@ BASE = [
     0,
     0,
     0,
-    0,
+    -0.40000000e-15,
     0,
     0,
     0,
@@ -63,18 +63,21 @@ BASE = [
 #     7.80278911e-10,
 # ]
 
-SUBMISSION = [
-    -1.93908168e-15,
-    2.09240884e-05,
-    -2.26855349e-06,
-    -1.59632136e-08,
-    7.81269165e-10,
-]
+# SUBMISSION = [
+#     -1.93908168e-15,
+#     2.09240884e-05,
+#     -2.26855349e-06,
+#     -1.59632136e-08,
+#     7.81269165e-10,
+# ]
+
+
+SUBMISSION = [2.41555638e-05, -1.90014724e-06, -1.71141768e-08, 9.01109219e-10]
 
 API_ENDPOINT = "http://10.4.21.156"
 MAX_DEG = 11
-# SECRET_KEY = "0suppMDvWimbxGKVY7BzOIjh65t1I55r64Mj6N0NDMgabOE28E"
-SECRET_KEY = "rrmQj2DT1EwULu26UxrqMCvj5NuJL3BTE1Mi3qtGDU6gD7X50V"
+SECRET_KEY = "0suppMDvWimbxGKVY7BzOIjh65t1I55r64Mj6N0NDMgabOE28E"
+# SECRET_KEY = "rrmQj2DT1EwULu26UxrqMCvj5NuJL3BTE1Mi3qtGDU6gD7X50V"
 
 
 def urljoin(root, path=""):
@@ -138,7 +141,7 @@ def submit(vector=SUBMISSION, id=SECRET_KEY):
 
     assert len(newVector) == MAX_DEG
 
-    print(sendRequest(id, newVector, "submit"))
+    print(np.array(json.loads(sendRequest(id, newVector, "submit"))))
 
 
 if __name__ == "__main__":

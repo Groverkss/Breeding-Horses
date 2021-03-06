@@ -100,21 +100,7 @@ class GeneticAlgorithm:
     def initializePopulation(self):
         """Initialize a population randomly"""
         return np.array(
-            [
-                # [
-                # -1.83487458e-15,
-                #     2.29577124e-05,
-                #     -2.05073784e-06,
-                #     -1.59497266e-08,
-                #     9.98614763e-10,
-                # ]
-                [
-                    2.29554350e-05,
-                    -2.05167798e-06,
-                    -1.59470099e-08,
-                    9.97794193e-10,
-                ]
-            ]
+            [[2.41555638e-05, -1.90014724e-06, -1.71141768e-08, 9.01109219e-10]]
             * self.populationSize
         )
 
@@ -154,7 +140,7 @@ class GeneticAlgorithm:
         )
 
         generateGaus = lambda x: np.clip(
-            np.random.normal(loc=x, scale=abs(x) / 5e3),
+            np.random.normal(loc=x, scale=abs(x) / 4e3),
             -self.scalingFactor,
             self.scalingFactor,
         )
@@ -175,5 +161,5 @@ class GeneticAlgorithm:
         )
 
 
-test = GeneticAlgorithm(9, 0.5, 0.7)
+test = GeneticAlgorithm(7, 1, 0.7)
 test.runEvolution(50000000)
