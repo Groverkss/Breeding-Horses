@@ -75,7 +75,7 @@ class GeneticAlgorithm:
 
                 # Select two parents from population
                 index_a, index_b = self.selectTwo(
-                    population[: self.populationSize - 2]
+                    population[: self.populationSize - 1]
                 )
 
                 # Cross them
@@ -100,8 +100,7 @@ class GeneticAlgorithm:
     def initializePopulation(self):
         """Initialize a population randomly"""
         return np.array(
-            [[2.41555638e-05, -1.90014724e-06, -1.71141768e-08, 9.01109219e-10]]
-            * self.populationSize
+            [[-1.10381749e-08, 7.65126241e-10]] * self.populationSize
         )
 
     def selectTwo(self, population):
@@ -140,7 +139,7 @@ class GeneticAlgorithm:
         )
 
         generateGaus = lambda x: np.clip(
-            np.random.normal(loc=x, scale=abs(x) / 4e3),
+            np.random.normal(loc=x, scale=abs(x) / 5e2),
             -self.scalingFactor,
             self.scalingFactor,
         )
@@ -161,5 +160,5 @@ class GeneticAlgorithm:
         )
 
 
-test = GeneticAlgorithm(7, 1, 0.7)
+test = GeneticAlgorithm(5, 0.5, 0.75)
 test.runEvolution(50000000)
