@@ -1,8 +1,202 @@
 import json, numpy as np
 import requests
-import sys
 
-USEFUL = [7, 8, 9, 10]
+USEFUL = [5, 7, 8, 9, 10]
+SUBMISSION = [0, 0, 0, 0]
+BASE = [
+    0.0,
+    -1.5453559231046635e-12,
+    -4.342298667696394e-13,
+    1.6287026302828268e-10,
+    -1.349365591502193e-10,
+    -8.708335186857455e-16,
+    8.821994522452975e-16,
+    1.419890139874561e-05,
+    -1.0044704173757682e-06,
+    -5.385216397608063e-09,
+    3.7988126119265983e-10,
+]
+
+BASE = [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    -8.708335186857455e-16,
+    0.0,
+    1.419890139874561e-05,
+    -1.0044704173757682e-06,
+    -5.385216397608063e-09,
+    3.7988126119265983e-10,
+]
+
+
+API_ENDPOINT = "http://10.4.21.156"
+MAX_DEG = 11
+SECRET_KEY = "0suppMDvWimbxGKVY7BzOIjh65t1I55r64Mj6N0NDMgabOE28E"
+
+
+def urljoin(root, path=""):
+    if path:
+        root = "/".join([root.rstrip("/"), path.rstrip("/")])
+    return root
+
+
+def sendRequest(id, vector, path):
+    api = urljoin(API_ENDPOINT, path)
+    vector = json.dumps(vector)
+    response = requests.post(api, data={"id": id, "vector": vector}).text
+    if "reported" in response:
+        print(response)
+        exit()
+
+    return response
+
+
+def getErrors(vector, once=True, id=SECRET_KEY):
+    # for i in vector:
+    #     assert 0 <= abs(i) <= 10
+
+    # newVector = list(BASE)
+
+    # for index, newIndex in enumerate(USEFUL):
+    #    newVector[newIndex] = vector[index]
+
+    # assert len(newVector) == MAX_DEG
+
+    if once:
+        err = np.array(json.loads(sendRequest(id, vector, "geterrors")))
+        print("Train and Test Err: ", err)
+        return
+    return json.loads(sendRequest(id, vector, "geterrors"))
+
+
+def testErrors(vector):
+    for i in vector:
+        assert 0 <= abs(i) <= 10
+
+    newVector = list(BASE)
+
+    for index, newIndex in enumerate(USEFUL):
+        newVector[newIndex] = vector[index]
+
+    assert len(newVector) == MAX_DEG
+
+    return [0, 0]
+
+
+def submit(vector, id=SECRET_KEY):
+    # for i in vector:
+    # assert 0 <= abs(i) <= 10
+
+    # newVector = list(BASE)
+
+    # for index, newIndex in enumerate(USEFUL):
+    # newVector[newIndex] = vector[index]
+
+    # assert len(newVector) == MAX_DEG
+
+    print((sendRequest(id, vector, "submit")) + ", rank below")
+
+
+if __name__ == "__main__":
+
+    vector = [
+        0,
+        0,
+        0,
+        0,
+        0,
+        -0.9e-15,
+        0,
+        2.605e-05,  # down abs - done
+        -1.88e-06,  # down abs - done
+        -1.106e-08,  # down abs
+        7.648e-10,  # up abs
+    ]
+
+    vector = [
+        0,
+        0,
+        0,
+        0,
+        0,
+        -0.45e-15,
+        0,
+        2.51e-05,  # down abs - done
+        -1.88e-06,  # down abs - done
+        -1.106e-08,  # down abs
+        7.648e-10,  # up abs
+    ]
+
+    data = [
+        [
+            0.0,
+            -1.5453559231046635e-12,
+            -4.342298667696394e-13,
+            1.6287026302828268e-10,
+            -1.349365591502193e-10,
+            -8.708335186857455e-16,
+            8.821994522452975e-16,
+            1.419890139874561e-05,
+            -1.0044704173757682e-06,
+            -5.385216397608063e-09,
+            3.7988126119265983e-10,
+        ],
+        [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            -8.708335186857455e-16,
+            0.0,
+            1.419890139874561e-05,
+            -1.0044704173757682e-06,
+            -5.385216397608063e-09,
+            3.7988126119265983e-10,
+        ],
+    ]
+
+    vector = [
+        0.00000000e00,
+        -1.54649393e-12,
+        -4.36115012e-13,
+        1.63062632e-10,
+        -1.34997781e-10,
+        -8.67386191e-16,
+        8.82877935e-16,
+        1.42284786e-05,
+        -1.00685242e-06,
+        -5.38474558e-09,
+        3.78988721e-10,
+    ]
+    vec = [
+        0,
+        0,
+        0,
+        0,
+        0,
+        -5.77e-16,
+        0,
+        1.52294786e-05,
+        -1.03985242e-06,
+        -5.4574558e-09,
+        3.78988721e-10,
+    ]
+    getErrors(vec)
+    submit(vec)
+
+    # count = 0
+    # for i in data:
+    #     print("----------- " + str(count) + " -------------")
+    #     getErrors(i)
+    #     submit(i)
+    #     print("Vector: ", i)
+    #     input()
+    #     count += 1
+
 # BASE = [
 #     0.0,
 #     0.0,
@@ -17,13 +211,13 @@ USEFUL = [7, 8, 9, 10]
 #     9.98214034e-10,
 # ]
 
-BASE = [
-    0, 0, 0, 0, 0, -0.40000000e-15, 0, 
-    0,
-    0,
-    0,
-    0,
-]
+# BASE = [
+#     0, 0, 0, 0, 0, -0.40000000e-15, 0,
+#     0,
+#     0,
+#     0,
+#     0,
+# ]
 
 # SUBMISSION = [
 #     -1.93765161e-15,
@@ -64,135 +258,4 @@ BASE = [
 #     -1.59632136e-08,
 #     7.81269165e-10,
 # ]
-
-
-SUBMISSION = [0, 0, 0, 0]
-
 # SUBMISSION = [-1.10741253e-08, 7.72494357e-10]
-
-API_ENDPOINT = "http://10.4.21.156"
-MAX_DEG = 11
-SECRET_KEY = "0suppMDvWimbxGKVY7BzOIjh65t1I55r64Mj6N0NDMgabOE28E"
-# SECRET_KEY = "rrmQj2DT1EwULu26UxrqMCvj5NuJL3BTE1Mi3qtGDU6gD7X50V"
-# SECRET_KEY = "HvVbnej6OOjSwakrrfSQDxQ2IrcipeIuQ1OISQ1FgL4RezLl4x"
-
-
-def urljoin(root, path=""):
-    if path:
-        root = "/".join([root.rstrip("/"), path.rstrip("/")])
-    return root
-
-
-def sendRequest(id, vector, path):
-    api = urljoin(API_ENDPOINT, path)
-    vector = json.dumps(vector)
-    response = requests.post(api, data={"id": id, "vector": vector}).text
-    if "reported" in response:
-        print(response)
-        exit()
-
-    return response
-
-
-def getErrors(vector, once=True, id=SECRET_KEY):
-    # for i in vector:
-    # assert 0 <= abs(i) <= 10
-
-    # newVector = list(BASE)
-
-    # for index, newIndex in enumerate(USEFUL):
-    # newVector[newIndex] = vector[index]
-
-    # assert len(newVector) == MAX_DEG
-
-    if once:
-        err = np.array(json.loads(sendRequest(id, vector, "geterrors")))
-        print("Train and Test Err: ", err)
-        return
-    return json.loads(sendRequest(id, vector, "geterrors"))
-
-
-def testErrors(vector):
-    for i in vector:
-        assert 0 <= abs(i) <= 10
-
-    newVector = list(BASE)
-
-    for index, newIndex in enumerate(USEFUL):
-        newVector[newIndex] = vector[index]
-
-    assert len(newVector) == MAX_DEG
-
-    return [0, 0]
-
-
-def submit(vector=SUBMISSION, id=SECRET_KEY):
-    # for i in vector:
-    # assert 0 <= abs(i) <= 10
-
-    # newVector = list(BASE)
-
-    # for index, newIndex in enumerate(USEFUL):
-    # newVector[newIndex] = vector[index]
-
-    # assert len(newVector) == MAX_DEG
-
-    print((sendRequest(id, vector, "submit")) + ", rank below")
-
-
-if __name__ == "__main__":
-
-    vector = [
-        0,
-        0,
-        0,
-        0,
-        0,
-        -0.9e-15,
-        0,
-        2.605e-05,           #down abs - done
-        -1.88e-06,         #down abs - done
-        -1.106e-08,        #down abs
-        7.648e-10,          #up abs
-    ]
-
-    vector = [
-        0,
-        0,
-        0,
-        0,
-        0,
-        -0.45e-15,
-        0,
-        2.51e-05,           #down abs - done
-        -1.88e-06,          #down abs - done
-        -1.106e-08,        #down abs
-        7.648e-10,          #up abs
-    ]
-
-    data = [
-        [0, 0, 0, 0, 0, -4.5e-16, 0, 2.6e-05, -1.88e-06, -1.106e-08, 7.648e-10],
-        [0, 0, 0, 0, 0, -4.5e-16, 0, 2.51e-05, -1.88e-06, -1.106e-08, 7.648e-10],
-        [0, 0, 0, 0, 0, -4.5e-16, 0, 2.49294925e-05, -1.88087633e-06, -1.1040905e-08, 7.64100794e-10],
-        [0, 0, 0, 0, 0, -4.5e-16, 0, 2.6e-05, -1.88e-06, -1.106e-08, 7.648e-10],
-        [0, 0, 0, 0, 0, -4.5e-16, 0, 2.51e-05, -1.88e-06, -1.106e-08, 7.648e-10],
-        [0, 0, 0, 0, 0, -4.5e-16, 0, 2.6e-05, -1.88e-06, -1.106e-08, 7.648e-10],
-        [0, 0, 0, 0, 0, -4.5e-16, 0, 2.51e-05, -1.88e-06, -1.106e-08, 7.648e-10],
-        [0, 0, 0, 0, 0, -6.0e-16, 0, 2.6e-05, -1.88e-06, -1.106e-08, 7.648e-10],
-        [0, 0, 0, 0, 0, -4.5e-16, 0, 2.492e-05, -1.879e-06, -1.1041e-08, 7.648e-10],
-        [0, 0, 0, 0, 0, -4.5e-16, 0, 2.492e-05, -1.879e-06, -1.1041e-08, 7.648e-10],
-    ]
-    
-    vector = [0, 0, 0, 0, 0, -4.5e-16, 0, 2.6e-05, -1.88e-06, -1.106e-08, 7.648e-10]
-    getErrors(vector)
-    submit(vector)
-
-    """
-    count = 0
-    for i in data: 
-        print("----------- " + str(count) + " -------------")
-        submit(i)
-        print("Vector: ", i)
-        input()
-        count += 1
-    """

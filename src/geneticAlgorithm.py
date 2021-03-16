@@ -6,11 +6,17 @@ import numpy as np
 
 from scipy import stats as sciStats
 
-from client import getErrors, testErrors
+from client import getErrors, submit
 
+# Constituents
 Individual = NDArray
 Population = NDArray
 Fitness = NDArray
+
+# Hyper-parameters
+POPULATION_SIZE = 9
+MUTATION_PROBABILITY = 0.5
+BETA = 0.75
 
 
 class GeneticAlgorithm:
@@ -38,24 +44,26 @@ class GeneticAlgorithm:
         for iteration in range(steps):
             fitness, testFitness = self.calculateFitness(population)
 
-            sortedIndices = fitness.argsort()
+            sortedIndices = (abs(fitness + testFitness)).argsort()
 
             population = population[sortedIndices]
             fitness = fitness[sortedIndices]
             testFitness = testFitness[sortedIndices]
 
-            print("Fitness: ", fitness)
-            print("Test Fitness: ", testFitness)
-            print("Vector: ", population)
+            print("Fitness: ", np.array([fitness[0]]))
+            print("Test Fitness: ", np.array([testFitness[0]]))
+            print("Vector: ", population[0])
+            # print("\n", population[0])
+            submit(population.tolist()[0])
 
-            with open("output.txt", "a") as outfile:
+            with open("generations.txt", "a") as outfile:
                 pprint(
-                    f"---Generation: {iteration}---",
+                    f"-----------GENERATION: {iteration}--------------",
                     stream=outfile,
                 )
                 pprint(population, stream=outfile)
                 pprint(
-                    f"---Fitness: {iteration}---",
+                    f"---Train Fitness: {iteration}---",
                     stream=outfile,
                 )
                 pprint(fitness, stream=outfile)
@@ -68,15 +76,14 @@ class GeneticAlgorithm:
             input()
 
             # Gurantee that top two will be selected without any mutation or
-            # crossover: 10 = 8 + 2
+            # crossover: 9 = 8 + 1
             nextGeneration = population[:1]
+            nonMutatedNextGen = population[:1]
 
-            for crossoverIteration in range(self.populationSize // 2):
+            for crossoverIteration in range(self.populationSize):
 
                 # Select two parents from population
-                index_a, index_b = self.selectTwo(
-                    population[: self.populationSize - 1]
-                )
+                index_a, index_b = self.selectTwo(population)
 
                 # Cross them
                 offspring_a, offspring_b = self.crossOver(
@@ -84,6 +91,10 @@ class GeneticAlgorithm:
                     population[index_b],
                     fitness[index_a],
                     fitness[index_b],
+                )
+
+                nonMutatedNextGen = np.concatenate(
+                    (nonMutatedNextGen, [offspring_a, offspring_b]), axis=0
                 )
 
                 # Mutate
@@ -95,12 +106,47 @@ class GeneticAlgorithm:
                     (nextGeneration, [offspring_a, offspring_b]), axis=0
                 )
 
-            population = nextGeneration
+            population = nextGeneration[:self.populationSize]
+
+            with open("generations.txt", "a") as outfile:
+                pprint(
+                    f"---After crossover population: {iteration}---",
+                    stream=outfile,
+                )
+                pprint(nonMutatedNextGen, stream=outfile)
+                pprint(
+                    f"---After mutation population: {iteration}---",
+                    stream=outfile,
+                )
+                pprint(nextGeneration, stream=outfile)
+                pprint(
+                    f"---After Selection population: {iteration}---",
+                    stream=outfile,
+                )
+                pprint(population, stream=outfile)
 
     def initializePopulation(self):
         """Initialize a population randomly"""
         return np.array(
-            [[-1.10381749e-08, 7.65126241e-10]] * self.populationSize
+            [
+                [
+                    # 0.0,
+                    # -1.5453559231046635e-12,
+                    # -4.342298667696394e-13,
+                    # 1.6287026302828268e-10,
+                    # -1.349365591502193e-10,
+                    # -8.708335186857455e-16,
+                    # 8.821994522452975e-16,
+                    # 1.419890139874561e-05,
+                    # -1.0044704173757682e-06,
+                    # -5.385216397608063e-09,
+                    # 3.7988126119265983e-10
+                    0.00000000e+00, -1.54649393e-12, -4.36115012e-13,  1.63062632e-10,
+                    -1.34997781e-10, -8.67386191e-16,  8.82877935e-16,  1.42284786e-05,
+                    -1.00685242e-06, -5.38474558e-09,  3.78988721e-10
+                ]
+            ]
+            * self.populationSize
         )
 
     def selectTwo(self, population):
@@ -153,12 +199,12 @@ class GeneticAlgorithm:
         """Returns fitness array for the population"""
         # return np.mean(population ** 2, axis=1) ** 0.5
 
-        errorList = [getErrors(indi) for indi in population.tolist()]
+        errorList = [getErrors(indi, False) for indi in population.tolist()]
         return (
             np.array([error[0] for error in errorList]),
             np.array([error[1] for error in errorList]),
         )
 
 
-test = GeneticAlgorithm(5, 0.5, 0.75)
+test = GeneticAlgorithm(POPULATION_SIZE, MUTATION_PROBABILITY, BETA)
 test.runEvolution(50000000)
