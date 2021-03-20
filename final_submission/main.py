@@ -80,7 +80,7 @@ class GeneticAlgorithm:
             nextGeneration = population[:1]
             nonMutatedNextGen = population[:1]
 
-            for crossoverIteration in range(self.populationSize):
+            for crossoverIteration in range(self.populationSize//2):
 
                 # Select two parents from population
                 index_a, index_b = self.selectTwo(population)
@@ -130,8 +130,17 @@ class GeneticAlgorithm:
         return np.array(
             [
                 [
-                    0.0, 0.0, 0.0, 0.0, 0.0, -5.74726809e-16, 0.0,
-                    1.52226779e-05, -1.04623995e-06, -5.47552982e-09, 3.8344835e-10
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -1.83669770e-15,
+                    0.0,
+                    2.29423303e-05,
+                    -2.04721003e-06,
+                    -1.59792834e-08,
+                    9.98214034e-10,
                 ]
             ]
             * self.populationSize
